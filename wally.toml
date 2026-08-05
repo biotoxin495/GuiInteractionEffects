@@ -1,12 +1,12 @@
 [package]
 name = "biotoxin495/guiinteractioneffects"
-description = "GUI Interaction Effects."
+description = "A Roblox UI module for declarative hover/press tween effects on UI Elements."
 version = "1.0.0"
 license = "MIT"
 authors = ["biotoxin495"]
 realm = "shared"
 registry = "https://github.com/UpliftGames/wally-index"
-repository = "https://github.com/biotoxin495/NumberSpinnerV2"
+repository = "https://github.com/biotoxin495/GuiInteractionEffects"
 
 exclude = [
 	"examples",
