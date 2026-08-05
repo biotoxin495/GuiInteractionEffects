@@ -10,14 +10,14 @@
 
 -- made with ❤️ by biotoxin495
 
--- A Roblox UI module for declarative hover/press tween effects on GuiButtons.
+-- A Roblox UI module for declarative hover/press tween effects on UI Elements.
 -- Original property values are captured automatically before any effect is applied, and
 -- restored on cleanup, on disable, or whenever a state stops configuring them.
 --
 -- Usage:
---   local GuiButtonEffects = require(path.to.GuiButtonEffects)
+--   local GuiInteractionEffects = require(path.to.GuiInteractionEffects)
 --
---   GuiButtonEffects:Setup(button, {
+--   GuiInteractionEffects:Setup(button, {
 --     OnMouseEnter = { self = { BackgroundTransparency = 0.5 } },
 --     OnClickStart = { self = { Rotation = 5 } },
 --   }, {
@@ -26,11 +26,11 @@
 --     OnMouseLeave = function() end,
 --   })
 --
---   GuiButtonEffects:SetEnabled(button, false) -- disable and snap back to the original appearance
---   GuiButtonEffects:Clear(button)             -- disconnect, restore, and forget the button
+--   GuiInteractionEffects:SetEnabled(button, false) -- disable and snap back to the original appearance
+--   GuiInteractionEffects:Clear(button)             -- disconnect, restore, and forget the button
 --
 -- One-off helper (no persistent listeners):
---   GuiButtonEffects:Apply(guiObject, { self = { BackgroundTransparency = 0.5 } }, tweenInfo)
+--   GuiInteractionEffects:Apply(guiObject, { self = { BackgroundTransparency = 0.5 } }, tweenInfo)
 --
 -- Effect states (all optional): OnMouseEnter, OnMouseLeave, OnClickStart
 --
@@ -59,7 +59,7 @@
 
 local TweenService = game:GetService("TweenService")
 
-local GuiButtonEffects = {}
+local GuiInteractionEffects = {}
 
 local DEFAULT_TWEEN_INFO = TweenInfo.new(0.15)
 local EFFECT_STATE_KEYS = { "OnMouseEnter", "OnMouseLeave", "OnClickStart" }
@@ -129,7 +129,7 @@ local function resolveTargetInstance(root: Instance, targetKey: EffectTarget): I
 	elseif typeof(targetKey) == "Instance" then
 		if not (targetKey :: Instance).Parent then
 			warn(
-				("GuiButtonEffects: target instance for %s appears to be destroyed (no Parent)"):format(
+				("GuiInteractionEffects: target instance for %s appears to be destroyed (no Parent)"):format(
 					root:GetFullName()
 				)
 			)
@@ -144,13 +144,13 @@ local function resolveTargetInstance(root: Instance, targetKey: EffectTarget): I
 		end
 
 		if #matches == 0 then
-			warn(("GuiButtonEffects: could not find target '%s' under %s"):format(targetKey, root:GetFullName()))
+			warn(("GuiInteractionEffects: could not find target '%s' under %s"):format(targetKey, root:GetFullName()))
 			return nil
 		end
 
 		if #matches > 1 then
 			warn(
-				("GuiButtonEffects: multiple descendants named '%s' under %s; string lookup is ambiguous, using the first match. Use a direct instance reference to avoid this."):format(
+				("GuiInteractionEffects: multiple descendants named '%s' under %s; string lookup is ambiguous, using the first match. Use a direct instance reference to avoid this."):format(
 					targetKey,
 					root:GetFullName()
 				)
@@ -160,7 +160,7 @@ local function resolveTargetInstance(root: Instance, targetKey: EffectTarget): I
 		return matches[1]
 	end
 
-	warn("GuiButtonEffects: invalid target key type: " .. typeof(targetKey))
+	warn("GuiInteractionEffects: invalid target key type: " .. typeof(targetKey))
 	return nil
 end
 
@@ -371,9 +371,9 @@ end
 -- @param button GuiButton - the button instance to apply effects to.
 -- @param effects ButtonEffectsTable - declarative per-state target/property config.
 -- @param options SetupOptions? - optional TweenInfo and hover callbacks.
-function GuiButtonEffects:Setup(button: GuiButton, effects: ButtonEffectsTable, options: SetupOptions?)
+function GuiInteractionEffects:Setup(button: GuiButton, effects: ButtonEffectsTable, options: SetupOptions?)
 	if activeButtonsData[button] then
-		GuiButtonEffects:Clear(button)
+		GuiInteractionEffects:Clear(button)
 	end
 
 	local resolvedOptions: SetupOptions = options or {}
@@ -427,7 +427,7 @@ function GuiButtonEffects:Setup(button: GuiButton, effects: ButtonEffectsTable, 
 					validProps[prop] = true
 				else
 					warn(
-						("GuiButtonEffects: property '%s' cannot be read on %s, skipping it"):format(
+						("GuiInteractionEffects: property '%s' cannot be read on %s, skipping it"):format(
 							prop,
 							instance:GetFullName()
 						)
@@ -446,10 +446,30 @@ function GuiButtonEffects:Setup(button: GuiButton, effects: ButtonEffectsTable, 
 	connectAttributeListener(button, data)
 end
 
+--- Sets up the standard mouse-over effect, darkening the button's current background color.
+-- @param button GuiButton - the button instance to apply the effect to.
+-- @param mouseOverFunct EffectCallback? - optional callback fired when the mouse enters.
+-- @param mouseClearFunct EffectCallback? - optional callback fired when the mouse leaves.
+function GuiInteractionEffects:SetupMouseOverEffect(
+	button: GuiButton,
+	mouseOverFunct: EffectCallback?,
+	mouseClearFunct: EffectCallback?
+)
+	GuiInteractionEffects:Setup(button, {
+		OnMouseEnter = {
+			self = { BackgroundColor3 = button.BackgroundColor3:Lerp(Color3.fromRGB(0, 0, 0), 0.2) },
+		},
+	}, {
+		TweenInfo = DEFAULT_TWEEN_INFO,
+		OnMouseEnter = mouseOverFunct,
+		OnMouseLeave = mouseClearFunct,
+	})
+end
+
 --- Disconnects all events, cancels active tweens, restores the original appearance, and
 --- removes the button from internal storage. Safe to call more than once; a no-op if the
 --- button was never set up (or was already cleared).
-function GuiButtonEffects:Clear(button: GuiButton)
+function GuiInteractionEffects:Clear(button: GuiButton)
 	local data = activeButtonsData[button]
 	if not data then
 		return
@@ -463,7 +483,7 @@ end
 --- Enables or disables interaction effects for a button. Disabling immediately (untweened)
 --- restores the original appearance and blocks future interaction events until re-enabled.
 --- Re-enabling does not auto-apply hover effects; a new interaction event is required.
-function GuiButtonEffects:SetEnabled(button: GuiButton, isEnabled: boolean)
+function GuiInteractionEffects:SetEnabled(button: GuiButton, isEnabled: boolean)
 	local data = activeButtonsData[button]
 	if not data then
 		return
@@ -474,7 +494,7 @@ end
 
 --- Immediately tweens a one-off collection of target properties on `guiObject`. Does not set
 --- up any persistent interaction listeners or state tracking.
-function GuiButtonEffects:Apply(guiObject: GuiObject, effects: EffectTargets, tweenInfo: TweenInfo?)
+function GuiInteractionEffects:Apply(guiObject: GuiObject, effects: EffectTargets, tweenInfo: TweenInfo?)
 	local info = tweenInfo or DEFAULT_TWEEN_INFO
 
 	for targetKey, props in pairs(effects) do
@@ -487,7 +507,7 @@ function GuiButtonEffects:Apply(guiObject: GuiObject, effects: EffectTargets, tw
 					validProps[prop] = value
 				else
 					warn(
-						("GuiButtonEffects: property '%s' cannot be read on %s, skipping it"):format(
+						("GuiInteractionEffects: property '%s' cannot be read on %s, skipping it"):format(
 							prop,
 							instance:GetFullName()
 						)
@@ -506,4 +526,4 @@ function GuiButtonEffects:Apply(guiObject: GuiObject, effects: EffectTargets, tw
 	end
 end
 
-return GuiButtonEffects
+return GuiInteractionEffects

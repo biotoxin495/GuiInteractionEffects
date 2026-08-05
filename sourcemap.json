@@ -1,1 +1,1 @@
-{"name":"GuiInteractionEffects","className":"DataModel","filePaths":["default.project.json"],"children":[{"name":"ReplicatedStorage","className":"ReplicatedStorage","children":[{"name":"NumberSpinnerV2","className":"ModuleScript","filePaths":["src/init.luau"]}]}]}
+{"name":"GuiInteractionEffects","className":"DataModel","filePaths":["default.project.json"],"children":[{"name":"ReplicatedStorage","className":"ReplicatedStorage","children":[{"name":"NumberSpinnerV2","className":"Folder"}]}]}
