@@ -285,4 +285,10 @@ local GuiInteractionEffects = require(
 )
 ```
 
+## License
+
+This project is released under the MIT License.
+
+See `LICENSE` for details.
+
 made with ❤️ by biotoxin495
