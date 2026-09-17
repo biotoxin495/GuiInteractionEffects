@@ -267,7 +267,7 @@ local GuiInteractionEffects = require(
 
 ### Manual installation
 
-You can install the standalone ModuleScript manually by copying `src/init.luau` from the repository.
+You can install the standalone ModuleScript manually by copying `init.luau` from the repository.
 
 Recommended structure:
 
@@ -284,5 +284,11 @@ local GuiInteractionEffects = require(
 	ReplicatedStorage.Modules.GuiInteractionEffects
 )
 ```
+
+## License
+
+This project is released under the MIT License.
+
+See `LICENSE` for details.
 
 made with ❤️ by biotoxin495
